@@ -5,6 +5,7 @@
   "main": "JsSpeechRecognizer.js",
   "scripts": {
     "install": "rollup -c"
+    "build": "rollup -c"
   },
   "repository": {
     "type": "git",
