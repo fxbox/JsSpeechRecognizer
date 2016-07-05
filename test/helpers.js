@@ -15,7 +15,7 @@ export default class TestHelper {
       .map(this.loadSample.bind(this))
       .map(this.decodeAudioSample.bind(this))
       .reduce((next, current) => {
-        return next.then(this.trainWithAudioBuffer(curWord, current));
+        return next.then(this.trainWithAudioBuffer.bind(null, curWord, current));
       }, Promise.resolve()).then(() => {
 
         console.log('training finished');
