@@ -82,7 +82,6 @@
     JsSpeechRecognizer.prototype.createMockSource = function(mediaUrl) {
         var _this = this;
         var destination = this.audioCtx.createMediaStreamDestination();
-        destination.channelCount = 1;
 
         var startUtterancePromise =  fetch(mediaUrl).then(function(response) {
             if (!response.ok) {
@@ -97,7 +96,7 @@
                 });
             })
         }).then(function(mediaData) {
-            return _this.generateMockStream(mediaData, _this.audioCtx.destination);
+            return _this.generateMockStream(mediaData, destination);
         });
 
         return Promise.all([startUtterancePromise, Promise.resolve(destination)]);
@@ -120,9 +119,13 @@
 
         // Connect a silence generator, and an utterance node to the destination
 
-        // Create an empty 2 channel looping buffer and start it
-        var createSilentSource = createSource(this.audioCtx, this.audioCtx.createBuffer(2, 22050, 44100), true /*loop*/, destination);
-        createSilentSource.source.start(0);
+        // Create a silent oscillator node
+        var oscillator = this.audioCtx.createOscillator();
+        oscillator.type = 'sine';
+        oscillator.frequency.value = 1; // Hz (inaudible to humans)
+
+        oscillator.connect(destination);
+        oscillator.start();
 
         return Promise.resolve().then(function() {
             return function() {
@@ -151,11 +154,13 @@
         function connectStream(stream) {
 
             if (stream && !usingSource) {
+                console.log("using microphone");
                 // Acess to the microphone was granted
                 _this.source = _this.audioCtx.createMediaStreamSource(stream);
             } else {
+                console.log("Using source: ", usingSource);
                 // Use a fake stream
-                _this.source = usingSource;
+                _this.source = _this.audioCtx.createMediaStreamSource(usingSource.stream);
             }
 
             _this.source.connect(_this.analyser);
