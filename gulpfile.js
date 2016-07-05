@@ -5,7 +5,10 @@ const TEST_FILE = 'test/test.keywordspotting.js';
 
 gulp.task('rollup-test', () => {
   return gulp
-    .src('test/**/*.js')
+    .src([
+      'test/**/*.js',
+      './*.js',
+    ])
     .pipe(rollup({
       entry: TEST_FILE,
     }))

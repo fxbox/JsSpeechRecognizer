@@ -9,7 +9,10 @@
   <script src="../../node_modules/chai/chai.js"></script>
   <script src="https://cdn.rawgit.com/mochajs/mocha/2.2.5/mocha.js"></script>
 
-  <script>mocha.setup('bdd');</script>
+  <script>
+    mocha.setup('bdd');
+    mocha.timeout(20000);
+  </script>
   <script src="test.keywordspotting.js"></script>
   <script>
     mocha.checkLeaks();
