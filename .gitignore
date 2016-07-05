@@ -26,4 +26,4 @@ Temporary Items
 
 # npm
 node_modules/
-
+test/dist/
