@@ -1,5 +1,6 @@
-import TestHelper from './helpers.js';
+import { createWhiteNoiseNode } from './noisehelper.js';
 import JsSpeechRecognizer from '../JsSpeechRecognizer.js';
+import TestHelper from './helpers.js';
 
 const assert = chai.assert;
 
@@ -43,7 +44,6 @@ describe('keyword-spotting', () => {
         assert(!!result, "No keyword spotted");
         console.log(result);
         assert(result.confidence >= CONFIDENCE_THRESHOLD, "Confidence under threshold");
-        // chai.assert(result.error < ERROR_THRESHOLD, "Error too high");
         done();
       });
   });
@@ -57,5 +57,25 @@ describe('keyword-spotting', () => {
         assert(result === undefined, "Keyword was spotted");
         done();
       });
+  });
+
+  it('should recognize a wakeword with background white noise', (done) => {
+    const testHelper = new TestHelper(jsSpeechRecognizer);
+    testHelper.model = models.get('default');
+
+    const whiteNoiseNode = createWhiteNoiseNode(testHelper.audioContext, 0.01);
+    whiteNoiseNode.connect(testHelper.mockAudioInput);
+
+    testHelper.startDebugSound();
+
+    testHelper.testKeywordSpottingWithSample('resources/mozilla.wav')
+      .then((result) => {
+        whiteNoiseNode.disconnect();
+        assert(!!result, "No keyword spotted");
+        console.log(result);
+        assert(result.confidence >= CONFIDENCE_THRESHOLD, "Confidence under threshold");
+        done();
+      });
+
   });
 });

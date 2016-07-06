@@ -82,7 +82,8 @@ export default class TestHelper {
 
         const audioEndedPromise = new Promise((resolve) => {
           audioBufferSource.addEventListener('ended', () => {
-            setTimeout(resolve, 500 /*ms*/);
+            console.log('sample playback ended');
+            setTimeout(resolve, 1000 /*ms*/);
           });
         });
 
@@ -95,6 +96,14 @@ export default class TestHelper {
             return result;
           });
       });
+  }
+
+  startDebugSound() {
+    // TODO: equivalent stopDebugSound
+    this
+      .audioContext
+      .createMediaStreamSource(this.mockAudioInput.stream)
+      .connect(this.audioContext.destination);
   }
 
   loadSample(wav) {
