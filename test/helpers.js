@@ -21,7 +21,12 @@ export default class TestHelper {
       }, Promise.resolve()).then(() => {
 
         console.log('training finished');
+        return this.speechRec.model;
       });
+  }
+
+  set model(model) {
+    this.speechRec.model = model
   }
 
   trainWithAudioBuffer(curWord, audioBufferPromise) {
