@@ -47,4 +47,15 @@ describe('keyword-spotting', () => {
         done();
       });
   });
+
+  it('should not recognize a different word than the trained word', (done) => {
+    const testHelper = new TestHelper(jsSpeechRecognizer);
+    testHelper.model = models.get('default');
+
+    testHelper.testKeywordSpottingWithSample('resources/television.wav')
+      .then((result) => {
+        assert(result === undefined, "Keyword was spotted");
+        done();
+      });
+  });
 });
