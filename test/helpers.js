@@ -5,9 +5,11 @@ function promiseMap(array, asyncMap) {
 export default class TestHelper {
 
   constructor(jsSpeechRecognizer) {
-//    window.speechRec = jsSpeechRecognizer;
     this.speechRec = jsSpeechRecognizer;
     this.mockAudioInput = this.audioContext.createMediaStreamDestination();
+
+    this.speechRec.openMic(this.mockAudioInput);
+
   }
 
   generateModelFromSamples(curWord, samples = []) {
@@ -15,7 +17,7 @@ export default class TestHelper {
       .map(this.loadSample.bind(this))
       .map(this.decodeAudioSample.bind(this))
       .reduce((next, current) => {
-        return next.then(this.trainWithAudioBuffer.bind(null, curWord, current));
+        return next.then(this.trainWithAudioBuffer.bind(this, curWord, current));
       }, Promise.resolve()).then(() => {
 
         console.log('training finished');
@@ -53,18 +55,41 @@ export default class TestHelper {
   }
 
   decodeAudioSample(sampleArrayBufferPromise) {
-    return sampleArrayBufferPromise.then((sampleArrayBuffer) => {
+    return Promise.resolve(sampleArrayBufferPromise).then((sampleArrayBuffer) => {
       return this.speechRec.audioCtx
         .decodeAudioData(sampleArrayBuffer);
     });
   }
 
-  testSampleAgainstModel(model, sample) {
-    return {
-      confidenceValue: 0,
-      error: 0,
-      noise: 0,
-    };
+  testKeywordSpottingWithSample(sample) {
+    // TODO: Compute many times and compute an average + confidence value
+    return this.loadSample(sample)
+      .then(this.decodeAudioSample.bind(this))
+      .then(this.createSource.bind(this))
+      .then((audioBufferSource) => {
+        this.speechRec.startKeywordSpottingRecording();
+
+        const keywordSpottedPromise = new Promise((resolve) => {
+          this.speechRec.keywordSpottedCallback = (result) => {
+            resolve(result);
+          };
+        });
+
+        const audioEndedPromise = new Promise((resolve) => {
+          audioBufferSource.addEventListener('ended', () => {
+            setTimeout(resolve, 500 /*ms*/);
+          });
+        });
+
+        audioBufferSource.connect(this.mockAudioInput);
+        audioBufferSource.start();
+
+        return Promise.race([keywordSpottedPromise, audioEndedPromise])
+          .then((result) => {
+            this.speechRec.stopRecording();
+            return result;
+          });
+      });
   }
 
   loadSample(wav) {

@@ -12,9 +12,11 @@ describe('keyword-spotting', () => {
     const model = testHelper.generateModelFromSamples('mozilla', ['resources/mozilla.wav']);
 
     model.then(() => {
-      const result = testHelper.testSampleAgainstModel('resources/mozilla.wav');
-      chai.assert(result.confidenceValue >= CONFIDENCE_THRESHOLD, "Confidence under threshold");
-      chai.assert(result.error < ERROR_THRESHOLD, "Error too high");
+      return testHelper.testKeywordSpottingWithSample('resources/mozilla.wav');
+    }).then((result) => {
+      console.log(result);
+      chai.assert(result.confidence >= CONFIDENCE_THRESHOLD, "Confidence under threshold");
+      // chai.assert(result.error < ERROR_THRESHOLD, "Error too high");
       done();
     });
   });

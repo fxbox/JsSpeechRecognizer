@@ -534,6 +534,7 @@
 
             this.resetBuffers();
             if (this.keywordSpottedCallback !== undefined && this.keywordSpottedCallback !== null) {
+                console.log(allResults[0]);
                 this.keywordSpottedCallback(allResults[0]);
             }
 
