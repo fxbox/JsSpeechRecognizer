@@ -14,6 +14,7 @@ describe('keyword-spotting', () => {
     model.then(() => {
       return testHelper.testKeywordSpottingWithSample('resources/mozilla.wav');
     }).then((result) => {
+      chai.assert(!!result, "No keyword spotted");
       console.log(result);
       chai.assert(result.confidence >= CONFIDENCE_THRESHOLD, "Confidence under threshold");
       // chai.assert(result.error < ERROR_THRESHOLD, "Error too high");
