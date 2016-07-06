@@ -28,10 +28,12 @@ export default class BenchmarkSuite {
         function runBench(iterations = 0, benchmarkResults = []) {
           return benchmark().then((result) => {
             benchmarkResults.push(result.confidence);
+            const stdev = stats.stdev(benchmarkResults);
 
-            if (stats.stdev(benchmarkResults) > 2 || iterations < 100) {
+            if (stdev > 2 || iterations < 20) {
               return runBench(iterations + 1, benchmarkResults);
             } else {
+              console.log(benchmarkResults);
               return Promise.resolve(benchmarkResults);
             }
           });
