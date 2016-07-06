@@ -1,5 +1,6 @@
 const gulp = require('gulp');
 const rollup = require('gulp-rollup');
+const runSequence = require('run-sequence');
 
 const TEST_FILE = 'test/test.keywordspotting.js';
 
@@ -38,3 +39,7 @@ gulp.task('watch', () => {
 });
 
 gulp.task('build-test', ['rollup-test', 'copy-html', 'copy-wavs']);
+
+gulp.task('default', () => {
+  runSequence('build-test', 'watch');
+});
