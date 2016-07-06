@@ -1,6 +1,8 @@
 import TestHelper from './helpers.js';
 import JsSpeechRecognizer from '../JsSpeechRecognizer.js';
 
+const assert = chai.assert;
+
 const CONFIDENCE_THRESHOLD = 0.5;
 const ERROR_THRESHOLD = 0.05;
 
@@ -26,21 +28,23 @@ describe('keyword-spotting', () => {
      jsSpeechRecognizer = new JsSpeechRecognizer();
   });
 
+  it('should generate a valid model when trained', () => {
+    const model = models.get('default');
+    assert(Array.isArray(model['mozilla']), 'Model should be an array');;
+    assert(model['mozilla'].length, 'Model should not be empty');;
+  });
+
   it('should recognize a wakeword given a recorded sample', (done) => {
     const testHelper = new TestHelper(jsSpeechRecognizer);
     testHelper.model = models.get('default');
 
     testHelper.testKeywordSpottingWithSample('resources/mozilla.wav')
       .then((result) => {
-        chai.assert(!!result, "No keyword spotted");
+        assert(!!result, "No keyword spotted");
         console.log(result);
-        chai.assert(result.confidence >= CONFIDENCE_THRESHOLD, "Confidence under threshold");
+        assert(result.confidence >= CONFIDENCE_THRESHOLD, "Confidence under threshold");
         // chai.assert(result.error < ERROR_THRESHOLD, "Error too high");
         done();
       });
-  });
-
-  it('should contain a model once trained', (done) => {
-
   });
 });
