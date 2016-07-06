@@ -45,7 +45,7 @@ describe('keyword-spotting', () => {
         console.log(result);
         assert(result.confidence >= CONFIDENCE_THRESHOLD, "Confidence under threshold");
         done();
-      });
+      }).catch(done);
   });
 
   it('should not recognize a different word than the trained word', (done) => {
@@ -56,7 +56,20 @@ describe('keyword-spotting', () => {
       .then((result) => {
         assert(result === undefined, "Keyword was spotted");
         done();
-      });
+      }).catch(done);
+  });
+
+  it('should recognize a word with a different pitch than the trained word', (done) => {
+    const testHelper = new TestHelper(jsSpeechRecognizer);
+    testHelper.model = models.get('default');
+
+    testHelper.testKeywordSpottingWithSample('resources/mozilla-1.wav')
+      .then((result) => {
+        assert(!!result, "No keyword spotted");
+        console.log(result);
+        assert(result.confidence >= CONFIDENCE_THRESHOLD, "Confidence under threshold");
+        done();
+      }).catch(done);
   });
 
   it('should recognize a wakeword with background white noise', (done) => {
@@ -66,8 +79,6 @@ describe('keyword-spotting', () => {
     const whiteNoiseNode = createWhiteNoiseNode(testHelper.audioContext, 0.01);
     whiteNoiseNode.connect(testHelper.mockAudioInput);
 
-    testHelper.startDebugSound();
-
     testHelper.testKeywordSpottingWithSample('resources/mozilla.wav')
       .then((result) => {
         whiteNoiseNode.disconnect();
@@ -75,7 +86,7 @@ describe('keyword-spotting', () => {
         console.log(result);
         assert(result.confidence >= CONFIDENCE_THRESHOLD, "Confidence under threshold");
         done();
-      });
+      }).catch(done);
 
   });
 });
