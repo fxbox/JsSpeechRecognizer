@@ -1,5 +1,8 @@
 import stats from 'stats-lite';
 
+const CONFIDENCE_THRESHOLD_INTERVAL = 0.02;
+const MINIMUM_SIGMA = 2;
+
 export default class BenchmarkSuite {
   constructor() {
     this.running = false;
@@ -25,21 +28,38 @@ export default class BenchmarkSuite {
     this.benchmarks.forEach((benchmark, name) => {
       benchmarks.push(() => {
 
-        function runBench(iterations = 0, benchmarkResults = []) {
-          return benchmark().then((result) => {
-            benchmarkResults.push(result.confidence);
-            const stdev = stats.stdev(benchmarkResults);
-
-            if (stdev > 2 || iterations < 20) {
-              return runBench(iterations + 1, benchmarkResults);
-            } else {
-              console.log(benchmarkResults);
-              return Promise.resolve(benchmarkResults);
+        function findConfidenceMaxima(iterations = 0, lastThreshold = 0.5, currentThreshold = 0.5, benchmarkResults = []) {
+          console.log("Iteration: ", iterations);
+          return benchmark(currentThreshold).then((result) => {
+            if (!result) {
+              if (lastThreshold < currentThreshold) {
+                // Reduce the threshold by (current - last) / 2
+                return findConfidenceMaxima(
+                    iterations + 1, currentThreshold,
+                    lastThreshold + ((currentThreshold - lastThreshold) / 2),
+                    benchmarkResults);
+              } else {
+                // Reduce the currentThreshold by a fixed amount
+                return findConfidenceMaxima(iterations + 1,
+                    currentThreshold, currentThreshold - CONFIDENCE_THRESHOLD_INTERVAL,
+                    benchmarkResults);
+              }
             }
+
+            const confidence = result.confidence;
+            console.log("Test confidence: ", confidence);
+
+            benchmarkResults.push(confidence);
+
+            if (stats.stdev(benchmarkResults.slice(benchmarkResults.length - 20)) < MINIMUM_SIGMA && iterations > 20) {
+              return Promise.resolve(benchmarkResults.slice(benchmarkResults.length - 20));
+            }
+
+            return findConfidenceMaxima(iterations + 1,
+              currentThreshold, currentThreshold + CONFIDENCE_THRESHOLD_INTERVAL, benchmarkResults)
           });
         }
-
-        return runBench().then((confidenceValues) => {
+        return findConfidenceMaxima().then((confidenceValues) => {
           const mean = stats.mean(confidenceValues);
           const stdev = stats.stdev(confidenceValues);
 

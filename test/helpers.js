@@ -93,7 +93,11 @@ export default class TestHelper {
         return Promise.race([keywordSpottedPromise, audioEndedPromise])
           .then((result) => {
             this.speechRec.stopRecording();
-            return result;
+
+            // Still wait for audioEnded:
+            return audioEndedPromise.then(() => {
+              return result;
+            });
           });
       });
   }

@@ -20,11 +20,14 @@ import TestHelper from './helpers.js';
     return Promise.all([defaultModel]).then(() => models);
   }()).then((models) => {
 
-    suite.add('test', () => {
+    suite.add('test', (threshold) => {
+      console.log("Running test with threshold: ", threshold);
       const jsSpeechRecognizer = new JsSpeechRecognizer();
-
+      jsSpeechRecognizer.keywordSpottingMinConfidence = threshold;
       const testHelper = new TestHelper(jsSpeechRecognizer);
       testHelper.model = models.get('default');
+
+      testHelper.startDebugSound();
 
       return testHelper.testKeywordSpottingWithSample('resources/mozilla.wav');
     })
