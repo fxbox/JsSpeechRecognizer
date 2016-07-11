@@ -37,7 +37,7 @@ export default class TestHelper {
         const source = this.createSource(audioBuffer);
 
         source.addEventListener('ended', () => {
-          this.speechRec.stopRecording();
+          this.speechRec.closeMic();
           this.speechRec.generateModel();
           resolve();
         });
@@ -92,7 +92,7 @@ export default class TestHelper {
 
         return Promise.race([keywordSpottedPromise, audioEndedPromise])
           .then((result) => {
-            this.speechRec.stopRecording();
+            this.speechRec.closeMic();
 
             // Still wait for audioEnded:
             return audioEndedPromise.then(() => {

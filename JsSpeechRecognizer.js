@@ -46,7 +46,6 @@ export default function JsSpeechRecognizer() {
     this.findDistanceForKeywordSpotting5 = this.generateFindDistanceForKeywordSpotting(5);
     this.findDistanceForKeywordSpotting15 = this.generateFindDistanceForKeywordSpotting(15);
 
-
     // Adjustable parameters
 
     // Create an analyser
@@ -130,6 +129,13 @@ JsSpeechRecognizer.prototype.generateMockStream = function(utteranceData, destin
 };
 
 /**
+ * Frees up any audio contexts
+ */
+JsSpeechRecognizer.prototype.closeMic = function() {
+  this.stopRecording();
+};
+
+/**
  * Requests access to the microphone.
  * @public
  */
@@ -157,7 +163,11 @@ JsSpeechRecognizer.prototype.openMic = function(usingSource) {
             _this.source = _this.audioCtx.createMediaStreamSource(usingSource.stream);
         }
 
-        _this.source.connect(_this.analyser);
+        // Filter out noise that is outside of normal human speech, is this
+        // correct range?
+        const bandpass  = _this._createBandpass(80, 600);
+        _this.source.connect(bandpass.audioIn);
+        bandpass.audioOut.connect(_this.analyser);
         _this.analyser.connect(_this.scriptNode);
 
         // This is needed for chrome
@@ -174,6 +184,21 @@ JsSpeechRecognizer.prototype.openMic = function(usingSource) {
         throw error;
     });
 };
+
+JsSpeechRecognizer.prototype._createBandpass = function(lowerFrequencyLimit, upperFrequencyLimit) {
+  const highpass = this.audioCtx.createBiquadFilter();
+  const lowpass = this.audioCtx.createBiquadFilter();
+
+  highpass.type = 'highpass';
+  highpass.frequency.value = lowerFrequencyLimit;
+
+  lowpass.type = 'lowpass';
+  lowpass.frequency.value = upperFrequencyLimit;
+
+  lowpass.connect(highpass);
+
+  return { audioIn: lowpass, audioOut: highpass };
+}
 
 /**
  * Returns false if the recognizer is not recording. True otherwise.
