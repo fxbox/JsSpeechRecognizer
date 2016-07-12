@@ -31,22 +31,8 @@
         speechRec.numGroups = 60;
         speechRec.groupSize = 5;
 
-        var mockSource = speechRec.createMockSource('../resources/sounds/notification1.wav');
-
         $(document).ready(function() {
-            mockSource.then(function(result) {
-                var startMockSound = result[0];
-                var source = result[1];
-
-                console.log("accepting input from 'source': ", source);
-
-                speechRec.openMic(source);
-
-                $("#start-mock").click(function(el) {
-                    startMockSound();
-                });
-
-            });
+            speechRec.openMic();
 
             // Add the handler for the button
             $("#startStopRecordingButton").click(function() {
@@ -173,8 +159,6 @@
     <div class="container">
         <div class="row" style="margin-top: 5%">
             <div class="one-half column">
-                <input class="button-primary" id="start-mock" type="button"
-                value="start mock sound"/>
                 <h2>Training</h2>
                 <div>
                     Word: <input id="currentWordText" type="text" value="" />
