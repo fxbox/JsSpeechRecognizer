@@ -171,7 +171,7 @@
 
           // Filter out noise that is outside of normal human speech, is this
           // correct range?
-          const bandpass  = _this._createBandpass(80, 600);
+          const bandpass  = _this._createBandpass(80, 3000);
           _this.source.connect(bandpass.audioIn);
           bandpass.audioOut.connect(_this.analyser);
           _this.analyser.connect(_this.scriptNode);
