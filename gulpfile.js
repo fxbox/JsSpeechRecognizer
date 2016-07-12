@@ -7,6 +7,26 @@ const source = require('vinyl-source-stream');
 
 const TEST_FILE = 'test/test.keywordspotting.js';
 const BENCHMARK_FILE = 'test/benchmark.js';
+const LIBRARY = 'JsSpeechRecognizer.js';
+
+gulp.task('rollup-library', () => {
+  return rollup({
+    entry: LIBRARY,
+    plugins: [
+        nodeResolve({
+        browser: true,
+        main: true,
+      }),
+      commonjs()
+    ],
+    format: 'umd',
+    moduleName: 'JsSpeechRecognizer'
+  })
+  .pipe(source(LIBRARY))
+  .pipe(
+    gulp.dest('dist')
+  );
+});
 
 gulp.task('rollup-test', () => {
   return rollup({
@@ -51,11 +71,12 @@ gulp.task('copy-wavs', () => {
 });
 
 gulp.task('watch', () => {
-  gulp.watch(['test/**'], ['build-test']);
+  gulp.watch(['test/**', 'lib/**', 'JsSpeechRecognizer.js'], ['build-test', 'build-library']);
 });
 
 gulp.task('build-test', ['rollup-test', 'rollup-benchmark', 'copy-html', 'copy-wavs']);
+gulp.task('build-library', ['rollup-library']);
 
 gulp.task('default', () => {
-  runSequence('build-test', 'watch');
+  runSequence('build-test', 'build-library', 'watch');
 });
